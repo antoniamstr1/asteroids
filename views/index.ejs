@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/style.css">
+    <title>Asteroids</title>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<div id="gameInterface" >
+    <div><h1>Game Over!</h1></div>
+    <div><h1 id="topRezultat">Ostvarili ste najbolji rezultat!</h1></div>
+    <div><button type="button" onclick="resetEverything()">Igraj ponovno</button>
+    </div>
+    <div id="vrijemeNaKraju">
+        <p>Elapsed Time:
+            <span id="minuteGame">00</span>
+            :
+            <span id="secondGame">00</span>
+            .
+            <span id="countGame">00</span></p>
+
+    </div>
+
+</div >
+<div class="containerDesno">
+<div id="timeri">
+    <p class="container-time"> Najbolje vrijeme: </p>
+    <div id= "bestTime">
+        <span class= "digits" id= "bestMin"></span>
+        :
+        <span class= "digits" id= "bestS"></span>
+        .
+        <span class= "digits" id= "bestMs"></span>
+    </div>
+    <p > Vrijeme: </p>
+    <div id= "time">
+        <span class= "digits" id= "minute"></span>
+        :
+        <span class= "digits" id= "second"></span>
+        .
+        <span class= "digits" id= "count"></span>
+    </div>
+</div>
+</div>
+<script>
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+
+
+    //kreiranje igrača
+    function drawPlayer() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "black";
+        ctx.fillStyle = "red";
+        ctx.fillRect(squareX, squareY, squareSize, squareSize);
+    }
+    var squareSize = 80;
+    var squareX = (c.width - squareSize) / 2;
+    var squareY = (c.height - squareSize) / 2;
+    drawPlayer();
+
+    //kretnje igrača
+    var keys = {};
+    window.addEventListener('keydown', function (event) {
+        keys[event.key] = true;
+        movePlayer();
+    });
+
+    window.addEventListener('keyup', function (event) {
+        keys[event.key] = false;
+        movePlayer();
+    });
+
+    function movePlayer() {
+        //blokira kretanje nakon sudara
+        if (collision === true)
+            return
+        var step = 10;
+        var diagonalStep = Math.sqrt(2) * step;
+
+        if (keys['ArrowUp'] && keys['ArrowRight']) {
+            squareX += diagonalStep;
+            squareY -= diagonalStep;
+        } else if (keys['ArrowUp'] && keys['ArrowLeft']) {
+            squareX -= diagonalStep;
+            squareY -= diagonalStep;
+        } else if (keys['ArrowDown'] && keys['ArrowRight']) {
+            squareX += diagonalStep;
+            squareY += diagonalStep;
+        } else if (keys['ArrowDown'] && keys['ArrowLeft']) {
+            squareX -= diagonalStep;
+            squareY += diagonalStep;
+        } else if (keys['ArrowUp']) {
+            squareY -= step;
+        } else if (keys['ArrowDown']) {
+            squareY += step;
+        } else if (keys['ArrowLeft']) {
+            squareX -= step;
+        } else if (keys['ArrowRight']) {
+            squareX += step;
+        }
+        drawPlayer();
+    }
+
+    //asteroidi
+    var asteroidi = [];
+    function getRandomNumber(x) {
+        const interval1 = Math.random() * (0 - (-20)) + (-20);
+        const interval2 = Math.random() * ((x+20) - x) + x;
+
+
+        return Math.random() < 0.5 ? interval1 : interval2;
+    }
+
+    function createAsteroid() {
+        var asteroid = {
+            x: Math.floor(getRandomNumber(c.width)),
+            y: Math.floor(getRandomNumber(c.width)),
+            directionX: Math.random() * 2 - 1,
+            directionY: Math.random() * 2 - 1
+        };
+        asteroidi.push(asteroid);
+        //console.log("asteroid:",asteroid);
+    }
+
+    function moveAsteroids() {
+        for (var i = 0; i < asteroidi.length; i++) {
+            asteroidi[i].x += asteroidi[i].directionX;
+            asteroidi[i].y += asteroidi[i].directionY;
+        }
+    }
+
+    function drawAsteroids() {
+        for (var i = 0; i < asteroidi.length; i++) {
+            ctx.fillStyle = "gray";
+            ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
+        }
+    }
+
+
+
+    function stopWatch() {
+        if (timer) {
+            count++;
+            if (count === 60) {
+                second++;
+                count = 0;
+            }
+            if (second === 60) {
+                minute++;
+                second = 0;
+            }
+            if (minute === 60) {
+                minute = 0;
+                second = 0;
+            }
+
+            let minuteString = minute;
+            let secondString = second;
+            let countString = count;
+
+            if (minute < 10) {
+                minuteString = "0" + minuteString;
+            }
+            if (second < 10) {
+                secondString = "0" + secondString;
+            }
+
+            if (count < 10) {
+                countString = "0" + countString;
+            }
+            document.getElementById('time').querySelector('#minute').innerHTML = minuteString;
+            document.getElementById('time').querySelector('#second').innerHTML = secondString;
+            document.getElementById('time').querySelector('#count').innerHTML = countString;
+
+            //za ispis vremena na kraju
+            document.getElementById('vrijemeNaKraju').querySelector('#minuteGame').innerHTML = minuteString;
+            document.getElementById('vrijemeNaKraju').querySelector('#secondGame').innerHTML = secondString;
+            document.getElementById('vrijemeNaKraju').querySelector('#countGame').innerHTML = countString;
+
+            setTimeout(stopWatch, 10);
+        }
+    }
+    // 1 je iz local storage
+    // 2 je vrijeme igrača
+    function isLocalBetterTime(min1, s1, ms1, min2, s2, ms2){
+        //ako je undefined onda je sigurno top time
+        console.log('isLocalBetterTime?');
+        console.log(min1, s1, ms1, min2, s2, ms2);
+        if (localStorage.bestMin === undefined)
+            return false;
+        //prvo usporedim minute
+        else{
+            if (min1 > min2)  return true;
+            else if (min1 < min2) {
+                console.log('false jer trnutno ima veće minute')
+                return false;
+            }
+            else if (min1 === min2){
+                //uspoređujem sekunde
+                console.log('minute su iste');
+                if (s1 > s2) return true;
+                else if (s1 < s2) {
+                    console.log('false jer trnutno ima iste minute, veće sekunde');
+                    return false;
+
+                }
+
+                else if (s1 === s2){
+                    //uspoređujem milisekunde
+                    if (ms1 > ms2) return true;
+                    else if ( ms1 < ms2) return true;
+                    else return true;
+                }
+            }
+        }
+    }
+
+
+    function resetEverything(){
+        location.reload();
+    }
+
+
+    function gameLoop() {
+
+        if (collision === false){
+
+            drawPlayer();
+            moveAsteroids();
+            drawAsteroids();
+            for (var i = 0; i < asteroidi.length; i++) {
+                if (isCollision(squareX, squareY, squareSize, squareSize, asteroidi[i].x, asteroidi[i].y, 20, 20)) {
+                    collision = true;
+                    timer = false;
+                    //console.log('imamo sudar')
+
+                    //web sučelje
+                    var gameOverScreen = document.getElementById("gameInterface");
+                    gameOverScreen.style.display = "flex";
+                    //spremanje u localstorage ako je veće od toga
+                    if (localStorage.bestMin === undefined) {
+                        console.log('local st je undefinef')
+                        localStorage.bestMin = minute;
+                        localStorage.bestS = second;
+                        localStorage.bestMs = count;
+                    }
+                    if (localStorage.bestMin !== undefined) {
+                        bestMin = localStorage.getItem('bestMin');
+                        bestS = localStorage.getItem('bestS');
+                        bestMs = localStorage.getItem('bestMs');
+                        console.log('bestMin:', bestMin);
+                        console.log('bestS:', bestS);
+                        console.log('bestMs:', bestMs);
+                        //pogledam jel veće vrijeme, ako je zamijenim
+                        console.log('isLocalBetterTime(bestMin, bestS, bestS,minute,second,count ) :',isLocalBetterTime(bestMin, bestS, bestS,minute,second,count ) )
+                        if (isLocalBetterTime(parseInt(bestMin, 10), parseInt(bestS, 10), parseInt(bestMs, 10),minute,second,count ) === true){
+                            console.log('trenutno vrijeme je veće');
+                            localStorage.bestMin = minute;
+                            localStorage.bestS = second;
+                            localStorage.bestMs = count;
+
+                            //možda neki "imate TOP rezultat"
+                            var topRezultat = document.getElementById("topRezultat");
+                            topRezultat.style.display = "block";
+                        }
+                    }
+                    return;
+
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+
+    }
+
+
+    //malo promijeniti
+    function isCollision(x1, y1, width1, height1, x2, y2, width2, height2) {
+        return (
+            x1 < x2 + width2 &&
+            x1 + width1 > x2 &&
+            y1 < y2 + height2 &&
+            y1 + height1 > y2
+        );
+    }
+
+
+    //ispis najboljeg vremena:
+    bestminuteString = localStorage.bestMin;
+    bestsecondString = localStorage.bestS;
+    bestcountString = localStorage.bestMs;
+    if (parseInt(localStorage.bestMin,10) < 10) {
+        bestminuteString = "0" + bestminuteString;
+    }
+    if (parseInt(localStorage.bestS,10)  < 10) {
+        bestsecondString = "0" + bestsecondString;
+    }
+
+    if (parseInt(localStorage.bestMs,10)  < 10) {
+        bestcountString = "0" + bestcountString;
+    }
+    document.getElementById('bestTime').querySelector('#bestMin').innerHTML = bestminuteString;
+    document.getElementById('bestTime').querySelector('#bestS').innerHTML = bestsecondString;
+    document.getElementById('bestTime').querySelector('#bestMs').innerHTML = bestcountString;
+
+
+
+        // https://www.tutorialspoint.com/how-to-create-stopwatch-using-html-css-and-javascript
+    var minute = 0;
+    var second = 0;
+    var count = 0;
+    timer = true;
+    var collision = false;
+    stopWatch();
+
+    for (var i = 0; i < 10; i++) {
+        createAsteroid();
+    }
+    var counter = 0;
+    setInterval(function () {
+        counter ++;
+        var max = 10 + 2* counter;
+        for (var i = 0; i < max; i++) {
+            createAsteroid();
+        }
+    }, 10000);
+
+    gameLoop();
+
+
+
+</script>
+</body>
+</html>
