@@ -2,6 +2,7 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    background-color: #f0f0f0;
 
 }
 
@@ -11,28 +12,28 @@ canvas {
     top: 0;
     left: 0;
     background-color: midnightblue;
+    z-index: -1;
+
 }
 
 #gameInterface {
     display: none;
-    flex-direction: column;
+
     position: absolute;
     width: 100%;
     top: 50%;
     color: antiquewhite;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.4);
+
+    background-color: rgba(255, 255, 255, 0.5);
 
     z-index: 999;
 }
-#gameInterfaceStart {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+
+#startScreen{
+    display: none;
 }
+
 #topRezultat{
     display: none;
 }
@@ -63,4 +64,13 @@ button{
         padding: 5px;
         background-color: midnightblue;
         color: antiquewhite;
+}
+#div-center{
+    margin: auto;
+    text-align: center;
+}
+
+#time, #bestTime{
+    padding-top: 25px;
+    padding-left: 10px;
 }
