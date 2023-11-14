@@ -116,13 +116,13 @@
 
             stopWatch();
 
-            for (var i = 0; i < 20; i++) {
+            for (var i = 0; i < 25; i++) {
                 createAsteroid();
             }
             var counter = 1;
             setInterval(function () {
                 counter++;
-                var max = 20 + 2 * counter;
+                var max = 25 + 2 * counter;
                 for (var i = 0; i < max; i++) {
                     createAsteroid();
                 }
