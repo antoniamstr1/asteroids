@@ -6,7 +6,7 @@
 </head>
 <body>
 <canvas id="myCanvas"></canvas>
-<img id="spaceshuttle" src="../images/spaceshuttle.png" style="display:none">
+<img id="spaceshuttle" src="../images/millFalc.png" style="display:none">
 <img id="asteroidImg" src="../images/asteroid.png" style="display:none">
 
 
@@ -66,7 +66,7 @@
     c.width = window.innerWidth-10;
     c.height = window.innerHeight-10;
     var ctx = c.getContext("2d");
-    var squareSize = 70;
+    var squareSize = 80;
     var squareX = (c.width - squareSize) / 2;
     var squareY = (c.height - squareSize) / 2;
 
@@ -166,7 +166,7 @@
         //ctx.fillStyle = "red";
         //ctx.fillRect(squareX, squareY, squareSize, squareSize);
         var img = document.getElementById("spaceshuttle");
-        ctx.drawImage(img,squareX, squareY,70,70);
+        ctx.drawImage(img,squareX, squareY,80,80);
     }
 
 
@@ -215,12 +215,15 @@
             "rgb(192,192,192)", "rgb(128,128,128)",
             "rgb(105,105,105)", "rgb(69,69,69)"];
         var randomBojaIndex = Math.floor(Math.random() * 5);
+        var size = [10,12,15];
+        var randomSizeIndex = Math.floor(Math.random() * 3);
         var asteroid = {
             x: Math.floor(getRandomNumber(c.width)),
             y: Math.floor(getRandomNumber(c.height)),
             directionX: Math.random() * 2 - 1,
             directionY: Math.random() * 2 - 1,
-            color: boje[randomBojaIndex]
+            color: boje[randomBojaIndex],
+            size: size[randomSizeIndex]
         };
         asteroidi.push(asteroid);
     }
@@ -270,8 +273,13 @@
 
     function drawAsteroids() {
         for (var i = 0; i < asteroidi.length; i++) {
+            //ctx.fillStyle = asteroidi[i].color;
+            //ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
             ctx.fillStyle = asteroidi[i].color;
-            ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
+            ctx.beginPath();
+            ctx.arc(asteroidi[i].x + 10, asteroidi[i].y + 10, asteroidi[i].size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
         }
     }
     function drawStars() {
@@ -411,10 +419,10 @@
     //malo promijeniti
     function isCollision(x1, y1, width1, height1, x2, y2, width2, height2) {
         return (
-            x1 < x2 + width2 &&
-            x1 + width1 > x2 &&
+            (x1+20) < x2 + width2 &&
+            (x1+20) + (width1-40) > x2 &&
             y1 < y2 + height2 &&
-            y1 + height1 > y2
+            y1 + (height1-15) > y2
         );
     }
 
