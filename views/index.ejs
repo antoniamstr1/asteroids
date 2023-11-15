@@ -7,16 +7,18 @@
 <body>
 <canvas id="myCanvas"></canvas>
 <img id="spaceshuttle" src="../images/spaceshuttle.png" style="display:none">
+<img id="asteroidImg" src="../images/asteroid.png" style="display:none">
+
 
 <div id="gameInterface">
     <div>
-        <div><h1>Game Over!</h1></div>
-        <div><h1 id="topRezultat">Ostvarili ste najbolji rezultat!</h1></div>
-        <div id="div-center">
-            <button type="button" onclick="resetEverything()">Igraj ponovno</button>
+        <div class="GameOverTekst"><h1>Game Over!</h1></div>
+        <div><h1 id="topRezultat">You've got the TOP result!</h1></div>
+        <div class="div-center">
+            <button type="button" onclick="resetEverything()">Play again</button>
         </div>
-        <div id="vrijemeNaKraju">
-            <p>Vijeme :
+        <div id="vrijemeNaKraju" class="div-center">
+            <p>Time :
                 <span id="minuteGame">00</span>
                 :
                 <span id="secondGame">00</span>
@@ -32,7 +34,7 @@
 <div class="containerDesno">
     <div id="timeri">
         <div class="container-time">
-            <p> Najbolje vrijeme: </p>
+            <p> Top time: </p>
             <div id="bestTime">
                 <span class="digits" id="bestMin"></span>
                 :
@@ -42,7 +44,7 @@
             </div>
         </div>
         <div class="container-time">
-            <p class="container-time"> Vrijeme: </p>
+            <p class="container-time"> Time: </p>
             <div id="time">
                 <span class="digits" id="minute"></span>
                 :
@@ -64,11 +66,16 @@
     c.width = window.innerWidth-10;
     c.height = window.innerHeight-10;
     var ctx = c.getContext("2d");
-    var squareSize = 80;
+    var squareSize = 70;
     var squareX = (c.width - squareSize) / 2;
     var squareY = (c.height - squareSize) / 2;
+
+
+
+
     //asteroidi
     var asteroidi = [];
+    var stars = [];
 
     var minute = 0;
     var second = 0;
@@ -118,6 +125,17 @@
     for (var i = 0; i < 25; i++) {
         createAsteroid();
     }
+
+
+    for (var j = 0; j < 200; j++) {
+        createStarsFirstTime();
+    }
+
+    setInterval(function () {
+        for (var i = 0; i < 40; i++) {
+            createStars();
+        }
+    }, 10000);
     var counter = 1;
     setInterval(function () {
         counter++;
@@ -132,13 +150,23 @@
 
     //kreiranje igrača
     function drawPlayer() {
-        ctx.clearRect(0, 0, c.width, c.height);
+
+        //gradijent boja pozadine
+        var gradient = ctx.createLinearGradient(0, 0, c.width, c.height);
+        gradient.addColorStop(0, 'rgb(6,33,54)');
+        gradient.addColorStop(0.7, 'rgb(55,37,102)');
+        gradient.addColorStop(1, 'rgb(1,18,31)');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        //ctx.clearRect(0, 0, c.width, c.height);
         ctx.shadowBlur = 20;
         ctx.shadowColor = "black";
         //ctx.fillStyle = "red";
         //ctx.fillRect(squareX, squareY, squareSize, squareSize);
         var img = document.getElementById("spaceshuttle");
-        ctx.drawImage(img,squareX, squareY,80,80);
+        ctx.drawImage(img,squareX, squareY,70,70);
     }
 
 
@@ -189,12 +217,42 @@
         var randomBojaIndex = Math.floor(Math.random() * 5);
         var asteroid = {
             x: Math.floor(getRandomNumber(c.width)),
-            y: Math.floor(getRandomNumber(c.width)),
+            y: Math.floor(getRandomNumber(c.height)),
             directionX: Math.random() * 2 - 1,
             directionY: Math.random() * 2 - 1,
             color: boje[randomBojaIndex]
         };
         asteroidi.push(asteroid);
+    }
+    console.log('c.width:', c.width);
+
+    function createStarsFirstTime(){
+        var star = {
+            x: Math.floor(Math.random() * (c.width + 1)),
+            y: Math.floor(Math.random() * (c.height + 1)),
+            directionX: (Math.random() * 2 - 1)*0.2,
+            directionY: 0,
+            color: "white"
+        };
+        stars.push(star);
+    }
+
+    function createStars(){
+        var randomNumber = Math.random();
+        var locX = 0;
+        if (randomNumber < 0.5) {
+            locX = -20;
+        } else {
+            locX =  c.width+20;
+        }
+        var star = {
+            x:locX,
+            y: Math.floor(Math.random() * (c.height + 1)),
+            directionX: (Math.random() * 2 - 1)*0.2,
+            directionY: 0,
+            color: "white"
+        };
+        stars.push(star);
     }
 
     function moveAsteroids() {
@@ -204,10 +262,28 @@
         }
     }
 
+    function moveStars() {
+        for (var i = 0; i < stars.length; i++) {
+            stars[i].x += stars[i].directionX;
+        }
+    }
+
     function drawAsteroids() {
         for (var i = 0; i < asteroidi.length; i++) {
             ctx.fillStyle = asteroidi[i].color;
             ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
+        }
+    }
+    function drawStars() {
+        for (var i = 0; i < stars.length; i++) {
+            ctx.fillStyle = stars[i].color;
+            ctx.beginPath();
+            ctx.shadowColor = "white";
+            ctx.shadowBlur = 15;
+            ctx.arc(stars[i].x, stars[i].y, 1.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
+
         }
     }
 
@@ -290,6 +366,8 @@
             drawPlayer();
             moveAsteroids();
             drawAsteroids();
+            moveStars();
+            drawStars();
             for (var i = 0; i < asteroidi.length; i++) {
                 if (isCollision(squareX, squareY, squareSize, squareSize, asteroidi[i].x, asteroidi[i].y, 20, 20)) {
                     collision = true;

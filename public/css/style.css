@@ -2,7 +2,7 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #f0f0f0;
+    /*background-color: #f0f0f0;*/
 
 }
 
@@ -11,7 +11,7 @@ canvas {
     position: absolute;
     top:5px;
     left: 5px;
-    background-color: midnightblue;
+    /*background-color: midnightblue;*/
     z-index: -1;
 
 }
@@ -21,7 +21,7 @@ canvas {
 
     position: absolute;
     width: 100%;
-    top: 50%;
+    top: 40%;
     color: antiquewhite;
     justify-content: center;
 
@@ -61,11 +61,15 @@ canvas {
 button{
         margin: 5px;
         border-radius: 5px;
-        padding: 5px;
+        padding: 10px;
         background-color: midnightblue;
         color: antiquewhite;
+        font-weight: bolder;
+        font-size: 17px;
+        border-color: antiquewhite;
+
 }
-#div-center{
+.div-center{
     margin: auto;
     text-align: center;
 }
@@ -73,4 +77,14 @@ button{
 #time, #bestTime{
     padding-top: 25px;
     padding-left: 10px;
+}
+
+#vrijemeNaKraju{
+    font-weight: bolder;
+    font-size: 17px;
+    padding-bottom: 30px;
+}
+
+.GameOverTekst{
+    padding-top: 30px;
 }
