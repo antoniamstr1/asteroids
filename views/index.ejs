@@ -5,339 +5,340 @@
     <title>Asteroids</title>
 </head>
 <body>
-<canvas id="myCanvas" ></canvas>
+<canvas id="myCanvas"></canvas>
+<img id="spaceshuttle" src="../images/spaceshuttle.png" style="display:none">
 
+<div id="gameInterface">
+    <div>
+        <div><h1>Game Over!</h1></div>
+        <div><h1 id="topRezultat">Ostvarili ste najbolji rezultat!</h1></div>
+        <div id="div-center">
+            <button type="button" onclick="resetEverything()">Igraj ponovno</button>
+        </div>
+        <div id="vrijemeNaKraju">
+            <p>Vijeme :
+                <span id="minuteGame">00</span>
+                :
+                <span id="secondGame">00</span>
+                .
+                <span id="countGame">00</span></p>
 
-<div id="gameInterface" >
-    <div >
-    <div><h1>Game Over!</h1></div>
-    <div><h1 id="topRezultat">Ostvarili ste najbolji rezultat!</h1></div>
-    <div id="div-center"><button type="button" onclick="resetEverything()">Igraj ponovno</button>
+        </div>
     </div>
-    <div id="vrijemeNaKraju">
-        <p>Vijeme :
-            <span id="minuteGame">00</span>
-            :
-            <span id="secondGame">00</span>
-            .
-            <span id="countGame">00</span></p>
 
-    </div>
-    </div>
-
-</div >
+</div>
 
 
 <div class="containerDesno">
-<div id="timeri">
-    <div class="container-time">
-    <p > Najbolje vrijeme: </p>
-    <div id= "bestTime">
-        <span class= "digits" id= "bestMin"></span>
-        :
-        <span class= "digits" id= "bestS"></span>
-        .
-        <span class= "digits" id= "bestMs"></span>
+    <div id="timeri">
+        <div class="container-time">
+            <p> Najbolje vrijeme: </p>
+            <div id="bestTime">
+                <span class="digits" id="bestMin"></span>
+                :
+                <span class="digits" id="bestS"></span>
+                .
+                <span class="digits" id="bestMs"></span>
+            </div>
+        </div>
+        <div class="container-time">
+            <p class="container-time"> Vrijeme: </p>
+            <div id="time">
+                <span class="digits" id="minute"></span>
+                :
+                <span class="digits" id="second"></span>
+                .
+                <span class="digits" id="count"></span>
+            </div>
+        </div>
     </div>
-    </div>
-    <div class="container-time">
-    <p  class="container-time"> Vrijeme: </p>
-    <div id= "time">
-        <span class= "digits" id= "minute"></span>
-        :
-        <span class= "digits" id= "second"></span>
-        .
-        <span class= "digits" id= "count"></span>
-    </div>
-    </div>
-</div>
 </div>
 <script>
-        //document.getElementById("myCanvas").style.display = "block";
+    //document.getElementById("myCanvas").style.display = "block";
 
-        function resetEverything(){
-            location.reload();
+    function resetEverything() {
+        location.reload();
+    }
+
+    var c = document.getElementById("myCanvas");
+    c.width = window.innerWidth-10;
+    c.height = window.innerHeight-10;
+    var ctx = c.getContext("2d");
+    var squareSize = 80;
+    var squareX = (c.width - squareSize) / 2;
+    var squareY = (c.height - squareSize) / 2;
+    //asteroidi
+    var asteroidi = [];
+
+    var minute = 0;
+    var second = 0;
+    var count = 0;
+
+    var collision = false;
+
+    //kretnje igrača
+    var keys = {};
+    window.addEventListener('keydown', function (event) {
+        keys[event.key] = true;
+        movePlayer();
+    });
+
+    window.addEventListener('keyup', function (event) {
+        keys[event.key] = false;
+        movePlayer();
+    });
+
+
+    drawPlayer();
+    //ispis najboljeg vremena:
+    bestminuteString = localStorage.bestMin;
+    bestsecondString = localStorage.bestS;
+    bestcountString = localStorage.bestMs;
+    if (parseInt(localStorage.bestMin, 10) < 10) {
+        bestminuteString = "0" + bestminuteString;
+    }
+    if (parseInt(localStorage.bestS, 10) < 10) {
+        bestsecondString = "0" + bestsecondString;
+    }
+
+    if (parseInt(localStorage.bestMs, 10) < 10) {
+        bestcountString = "0" + bestcountString;
+    }
+    document.getElementById('bestTime').querySelector('#bestMin').innerHTML = bestminuteString;
+    document.getElementById('bestTime').querySelector('#bestS').innerHTML = bestsecondString;
+    document.getElementById('bestTime').querySelector('#bestMs').innerHTML = bestcountString;
+
+
+    // https://www.tutorialspoint.com/how-to-create-stopwatch-using-html-css-and-javascript
+
+    timer = true;
+
+    stopWatch();
+
+    for (var i = 0; i < 25; i++) {
+        createAsteroid();
+    }
+    var counter = 1;
+    setInterval(function () {
+        counter++;
+        var max = 25 + 2 * counter;
+        for (var i = 0; i < max; i++) {
+            createAsteroid();
         }
+    }, 10000);
 
-        var c = document.getElementById("myCanvas");
-        c.width = window.innerWidth;
-        c.height = window.innerHeight;
-        var ctx = c.getContext("2d");
-        var squareSize = 80;
-        var squareX = (c.width - squareSize) / 2;
-        var squareY = (c.height - squareSize) / 2;
-        //asteroidi
-        var asteroidi = [];
-
-        var minute = 0;
-        var second = 0;
-        var count = 0;
-
-        var collision = false;
-
-        //kretnje igrača
-        var keys = {};
-        window.addEventListener('keydown', function (event) {
-            keys[event.key] = true;
-            movePlayer();
-        });
-
-        window.addEventListener('keyup', function (event) {
-            keys[event.key] = false;
-            movePlayer();
-        });
+    gameLoop();
 
 
+    //kreiranje igrača
+    function drawPlayer() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "black";
+        //ctx.fillStyle = "red";
+        //ctx.fillRect(squareX, squareY, squareSize, squareSize);
+        var img = document.getElementById("spaceshuttle");
+        ctx.drawImage(img,squareX, squareY,80,80);
+    }
 
 
-            drawPlayer();
-            //ispis najboljeg vremena:
-            bestminuteString = localStorage.bestMin;
-            bestsecondString = localStorage.bestS;
-            bestcountString = localStorage.bestMs;
-            if (parseInt(localStorage.bestMin, 10) < 10) {
-                bestminuteString = "0" + bestminuteString;
-            }
-            if (parseInt(localStorage.bestS, 10) < 10) {
-                bestsecondString = "0" + bestsecondString;
-            }
+    function movePlayer() {
+        //blokira kretanje nakon sudara
+        if (collision === true)
+            return
+        var step = 8;
+        var diagonalStep = Math.sqrt(2) * step;
 
-            if (parseInt(localStorage.bestMs, 10) < 10) {
-                bestcountString = "0" + bestcountString;
-            }
-            document.getElementById('bestTime').querySelector('#bestMin').innerHTML = bestminuteString;
-            document.getElementById('bestTime').querySelector('#bestS').innerHTML = bestsecondString;
-            document.getElementById('bestTime').querySelector('#bestMs').innerHTML = bestcountString;
-
-
-            // https://www.tutorialspoint.com/how-to-create-stopwatch-using-html-css-and-javascript
-
-            timer = true;
-
-            stopWatch();
-
-            for (var i = 0; i < 25; i++) {
-                createAsteroid();
-            }
-            var counter = 1;
-            setInterval(function () {
-                counter++;
-                var max = 25 + 2 * counter;
-                for (var i = 0; i < max; i++) {
-                    createAsteroid();
-                }
-            }, 10000);
-
-            gameLoop();
-
-
-        //kreiranje igrača
-        function drawPlayer() {
-            ctx.clearRect(0, 0, c.width, c.height);
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = "black";
-            ctx.fillStyle = "red";
-            ctx.fillRect(squareX, squareY, squareSize, squareSize);
+        if (keys['ArrowUp'] && keys['ArrowRight']) {
+            squareX += diagonalStep;
+            squareY -= diagonalStep;
+        } else if (keys['ArrowUp'] && keys['ArrowLeft']) {
+            squareX -= diagonalStep;
+            squareY -= diagonalStep;
+        } else if (keys['ArrowDown'] && keys['ArrowRight']) {
+            squareX += diagonalStep;
+            squareY += diagonalStep;
+        } else if (keys['ArrowDown'] && keys['ArrowLeft']) {
+            squareX -= diagonalStep;
+            squareY += diagonalStep;
+        } else if (keys['ArrowUp']) {
+            squareY -= step;
+        } else if (keys['ArrowDown']) {
+            squareY += step;
+        } else if (keys['ArrowLeft']) {
+            squareX -= step;
+        } else if (keys['ArrowRight']) {
+            squareX += step;
         }
+        drawPlayer();
+    }
 
 
+    function getRandomNumber(x) {
+        const interval1 = Math.random() * (0 - (-20)) + (-20);
+        const interval2 = Math.random() * ((x + 20) - x) + x;
 
-        function movePlayer() {
-            //blokira kretanje nakon sudara
-            if (collision === true)
-                return
-            var step = 8;
-            var diagonalStep = Math.sqrt(2) * step;
 
-            if (keys['ArrowUp'] && keys['ArrowRight']) {
-                squareX += diagonalStep;
-                squareY -= diagonalStep;
-            } else if (keys['ArrowUp'] && keys['ArrowLeft']) {
-                squareX -= diagonalStep;
-                squareY -= diagonalStep;
-            } else if (keys['ArrowDown'] && keys['ArrowRight']) {
-                squareX += diagonalStep;
-                squareY += diagonalStep;
-            } else if (keys['ArrowDown'] && keys['ArrowLeft']) {
-                squareX -= diagonalStep;
-                squareY += diagonalStep;
-            } else if (keys['ArrowUp']) {
-                squareY -= step;
-            } else if (keys['ArrowDown']) {
-                squareY += step;
-            } else if (keys['ArrowLeft']) {
-                squareX -= step;
-            } else if (keys['ArrowRight']) {
-                squareX += step;
+        return Math.random() < 0.5 ? interval1 : interval2;
+    }
+
+    function createAsteroid() {
+        var boje = ["rgb(211, 211, 211)",
+            "rgb(192,192,192)", "rgb(128,128,128)",
+            "rgb(105,105,105)", "rgb(69,69,69)"];
+        var randomBojaIndex = Math.floor(Math.random() * 5);
+        var asteroid = {
+            x: Math.floor(getRandomNumber(c.width)),
+            y: Math.floor(getRandomNumber(c.width)),
+            directionX: Math.random() * 2 - 1,
+            directionY: Math.random() * 2 - 1,
+            color: boje[randomBojaIndex]
+        };
+        asteroidi.push(asteroid);
+    }
+
+    function moveAsteroids() {
+        for (var i = 0; i < asteroidi.length; i++) {
+            asteroidi[i].x += asteroidi[i].directionX;
+            asteroidi[i].y += asteroidi[i].directionY;
+        }
+    }
+
+    function drawAsteroids() {
+        for (var i = 0; i < asteroidi.length; i++) {
+            ctx.fillStyle = asteroidi[i].color;
+            ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
+        }
+    }
+
+
+    function stopWatch() {
+        if (timer) {
+            count++;
+            if (count === 60) {
+                second++;
+                count = 0;
             }
-            drawPlayer();
-        }
-
-
-
-        function getRandomNumber(x) {
-            const interval1 = Math.random() * (0 - (-20)) + (-20);
-            const interval2 = Math.random() * ((x + 20) - x) + x;
-
-
-            return Math.random() < 0.5 ? interval1 : interval2;
-        }
-
-        function createAsteroid() {
-            var asteroid = {
-                x: Math.floor(getRandomNumber(c.width)),
-                y: Math.floor(getRandomNumber(c.width)),
-                directionX: Math.random() * 2 - 1,
-                directionY: Math.random() * 2 - 1
-            };
-            asteroidi.push(asteroid);
-        }
-
-        function moveAsteroids() {
-            for (var i = 0; i < asteroidi.length; i++) {
-                asteroidi[i].x += asteroidi[i].directionX;
-                asteroidi[i].y += asteroidi[i].directionY;
+            if (second === 60) {
+                minute++;
+                second = 0;
             }
-        }
-
-        function drawAsteroids() {
-            for (var i = 0; i < asteroidi.length; i++) {
-                ctx.fillStyle = "gray";
-                ctx.fillRect(asteroidi[i].x, asteroidi[i].y, 20, 20);
+            if (minute === 60) {
+                minute = 0;
+                second = 0;
             }
-        }
 
-        function stopWatch() {
-            if (timer) {
-                count++;
-                if (count === 60) {
-                    second++;
-                    count = 0;
-                }
-                if (second === 60) {
-                    minute++;
-                    second = 0;
-                }
-                if (minute === 60) {
-                    minute = 0;
-                    second = 0;
-                }
+            let minuteString = minute;
+            let secondString = second;
+            let countString = count;
 
-                let minuteString = minute;
-                let secondString = second;
-                let countString = count;
-
-                //da mi ima dvije znamenke kod ispisa vremena
-                if (minute < 10) {
-                    minuteString = "0" + minuteString;
-                }
-                if (second < 10) {
-                    secondString = "0" + secondString;
-                }
-
-                if (count < 10) {
-                    countString = "0" + countString;
-                }
-                document.getElementById('time').querySelector('#minute').innerHTML = minuteString;
-                document.getElementById('time').querySelector('#second').innerHTML = secondString;
-                document.getElementById('time').querySelector('#count').innerHTML = countString;
-
-                //za ispis vremena na kraju
-                document.getElementById('vrijemeNaKraju').querySelector('#minuteGame').innerHTML = minuteString;
-                document.getElementById('vrijemeNaKraju').querySelector('#secondGame').innerHTML = secondString;
-                document.getElementById('vrijemeNaKraju').querySelector('#countGame').innerHTML = countString;
-
-                setTimeout(stopWatch, 10);
+            //da mi ima dvije znamenke kod ispisa vremena
+            if (minute < 10) {
+                minuteString = "0" + minuteString;
             }
-        }
+            if (second < 10) {
+                secondString = "0" + secondString;
+            }
 
-        // 1 je iz local storage
-        // 2 je vrijeme igrača
-        function isLocalBetterTime(min1, s1, ms1, min2, s2, ms2) {
-            //ako je undefined onda je sigurno top time
-            if (localStorage.bestMin === undefined)
+            if (count < 10) {
+                countString = "0" + countString;
+            }
+            document.getElementById('time').querySelector('#minute').innerHTML = minuteString;
+            document.getElementById('time').querySelector('#second').innerHTML = secondString;
+            document.getElementById('time').querySelector('#count').innerHTML = countString;
+
+            //za ispis vremena na kraju
+            document.getElementById('vrijemeNaKraju').querySelector('#minuteGame').innerHTML = minuteString;
+            document.getElementById('vrijemeNaKraju').querySelector('#secondGame').innerHTML = secondString;
+            document.getElementById('vrijemeNaKraju').querySelector('#countGame').innerHTML = countString;
+
+            setTimeout(stopWatch, 10);
+        }
+    }
+
+    // 1 je iz local storage
+    // 2 je vrijeme igrača
+    function isLocalBetterTime(min1, s1, ms1, min2, s2, ms2) {
+        //ako je undefined onda je sigurno top time
+        if (localStorage.bestMin === undefined)
+            return false;
+        //prvo usporedim minute
+        else {
+            if (min1 < min2) return true;
+            else if (min1 > min2) {
                 return false;
-            //prvo usporedim minute
-            else {
-                if (min1 < min2) return true;
-                else if (min1> min2) {
+            } else if (min1 === min2) {
+                //uspoređujem sekunde
+                if (s1 < s2) return true;
+                else if (s1 > s2) {
                     return false;
-                } else if (min1 === min2) {
-                    //uspoređujem sekunde
-                    if (s1 < s2) return true;
-                    else if (s1 > s2) {
-                        return false;
 
-                    } else if (s1 === s2) {
-                        //uspoređujem milisekunde
-                        if (ms1 < ms2) return true;
-                        else if (ms1 > ms2) return true;
-                        else return true;
-                    }
+                } else if (s1 === s2) {
+                    //uspoređujem milisekunde
+                    if (ms1 < ms2) return true;
+                    else if (ms1 > ms2) return true;
+                    else return true;
                 }
             }
         }
+    }
 
-        function gameLoop() {
-            //ako je došlo do sudara
-            if (collision === false) {
+    function gameLoop() {
+        //ako je došlo do sudara
+        if (collision === false) {
 
-                drawPlayer();
-                moveAsteroids();
-                drawAsteroids();
-                for (var i = 0; i < asteroidi.length; i++) {
-                    if (isCollision(squareX, squareY, squareSize, squareSize, asteroidi[i].x, asteroidi[i].y, 20, 20)) {
-                        collision = true;
-                        timer = false;
+            drawPlayer();
+            moveAsteroids();
+            drawAsteroids();
+            for (var i = 0; i < asteroidi.length; i++) {
+                if (isCollision(squareX, squareY, squareSize, squareSize, asteroidi[i].x, asteroidi[i].y, 20, 20)) {
+                    collision = true;
+                    timer = false;
 
-                        //web sučelje
-                        var gameOverScreen = document.getElementById("gameInterface");
-                        gameOverScreen.style.display = "flex";
-                        //spremanje u localstorage ako je veće od toga
-                        if (localStorage.bestMin === undefined) {
+                    //web sučelje
+                    var gameOverScreen = document.getElementById("gameInterface");
+                    gameOverScreen.style.display = "flex";
+                    //spremanje u localstorage ako je veće od toga
+                    if (localStorage.bestMin === undefined) {
+                        localStorage.bestMin = minute;
+                        localStorage.bestS = second;
+                        localStorage.bestMs = count;
+                    }
+                    if (localStorage.bestMin !== undefined) {
+                        bestMin = localStorage.getItem('bestMin');
+                        bestS = localStorage.getItem('bestS');
+                        bestMs = localStorage.getItem('bestMs');
+
+                        //pogledam jel veće vrijeme, ako je zamijenim
+                        if (isLocalBetterTime(parseInt(bestMin, 10), parseInt(bestS, 10), parseInt(bestMs, 10), minute, second, count) === true) {
                             localStorage.bestMin = minute;
                             localStorage.bestS = second;
                             localStorage.bestMs = count;
+
+                            //možda neki "imate TOP rezultat"
+                            var topRezultat = document.getElementById("topRezultat");
+                            topRezultat.style.display = "flex";
                         }
-                        if (localStorage.bestMin !== undefined) {
-                            bestMin = localStorage.getItem('bestMin');
-                            bestS = localStorage.getItem('bestS');
-                            bestMs = localStorage.getItem('bestMs');
-
-                            //pogledam jel veće vrijeme, ako je zamijenim
-                            if (isLocalBetterTime(parseInt(bestMin, 10), parseInt(bestS, 10), parseInt(bestMs, 10), minute, second, count) === true) {
-                                localStorage.bestMin = minute;
-                                localStorage.bestS = second;
-                                localStorage.bestMs = count;
-
-                                //možda neki "imate TOP rezultat"
-                                var topRezultat = document.getElementById("topRezultat");
-                                topRezultat.style.display = "flex";
-                            }
-                        }
-                        return;
-
                     }
+                    return;
+
                 }
-                requestAnimationFrame(gameLoop);
             }
-
-
-        }
-        //malo promijeniti
-        function isCollision(x1, y1, width1, height1, x2, y2, width2, height2) {
-            return (
-                x1 < x2 + width2 &&
-                x1 + width1 > x2 &&
-                y1 < y2 + height2 &&
-                y1 + height1 > y2
-            );
+            requestAnimationFrame(gameLoop);
         }
 
 
+    }
 
-
-
+    //malo promijeniti
+    function isCollision(x1, y1, width1, height1, x2, y2, width2, height2) {
+        return (
+            x1 < x2 + width2 &&
+            x1 + width1 > x2 &&
+            y1 < y2 + height2 &&
+            y1 + height1 > y2
+        );
+    }
 
 
 </script>
