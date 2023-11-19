@@ -66,7 +66,7 @@
     c.width = window.innerWidth-10;
     c.height = window.innerHeight-10;
     var ctx = c.getContext("2d");
-    var squareSize = 80;
+    var squareSize = 100;
     var squareX = (c.width - squareSize) / 2;
     var squareY = (c.height - squareSize) / 2;
 
@@ -101,6 +101,11 @@
     bestminuteString = localStorage.bestMin;
     bestsecondString = localStorage.bestS;
     bestcountString = localStorage.bestMs;
+    if (localStorage.bestMin === undefined){
+        bestminuteString = "00";
+        bestsecondString = "00";
+        bestcountString = "00";
+    }
     if (parseInt(localStorage.bestMin, 10) < 10) {
         bestminuteString = "0" + bestminuteString;
     }
@@ -116,13 +121,12 @@
     document.getElementById('bestTime').querySelector('#bestMs').innerHTML = bestcountString;
 
 
-    // https://www.tutorialspoint.com/how-to-create-stopwatch-using-html-css-and-javascript
-
     timer = true;
+    // https://www.tutorialspoint.com/how-to-create-stopwatch-using-html-css-and-javascript
 
     stopWatch();
 
-    for (var i = 0; i < 25; i++) {
+    for (var i = 0; i < 55; i++) {
         createAsteroid();
     }
 
@@ -136,6 +140,7 @@
             createStars();
         }
     }, 10000);
+
     var counter = 1;
     setInterval(function () {
         counter++;
@@ -166,7 +171,7 @@
         //ctx.fillStyle = "red";
         //ctx.fillRect(squareX, squareY, squareSize, squareSize);
         var img = document.getElementById("spaceshuttle");
-        ctx.drawImage(img,squareX, squareY,80,80);
+        ctx.drawImage(img,squareX, squareY,100,100);
     }
 
 
@@ -174,29 +179,37 @@
         //blokira kretanje nakon sudara
         if (collision === true)
             return
-        var step = 8;
+        var step = 7;
         var diagonalStep = Math.sqrt(2) * step;
 
         if (keys['ArrowUp'] && keys['ArrowRight']) {
             squareX += diagonalStep;
             squareY -= diagonalStep;
+
         } else if (keys['ArrowUp'] && keys['ArrowLeft']) {
             squareX -= diagonalStep;
             squareY -= diagonalStep;
+
         } else if (keys['ArrowDown'] && keys['ArrowRight']) {
             squareX += diagonalStep;
             squareY += diagonalStep;
+
         } else if (keys['ArrowDown'] && keys['ArrowLeft']) {
             squareX -= diagonalStep;
             squareY += diagonalStep;
+
         } else if (keys['ArrowUp']) {
             squareY -= step;
+
         } else if (keys['ArrowDown']) {
             squareY += step;
+
         } else if (keys['ArrowLeft']) {
             squareX -= step;
+
         } else if (keys['ArrowRight']) {
             squareX += step;
+
         }
         drawPlayer();
     }
@@ -206,8 +219,13 @@
         const interval1 = Math.random() * (0 - (-20)) + (-20);
         const interval2 = Math.random() * ((x + 20) - x) + x;
 
-
-        return Math.random() < 0.5 ? interval1 : interval2;
+        if (Math.random() < 0.5){
+            return interval1;
+        }
+        else
+        {
+            return interval2;
+        }
     }
 
     function createAsteroid() {
@@ -415,15 +433,15 @@
 
 
     }
-
-    //malo promijeniti
+    // pozicija playera
+    // širina, visina playera
+    // ostalo za asteroide
     function isCollision(x1, y1, width1, height1, x2, y2, width2, height2) {
-        return (
-            (x1+20) < x2 + width2 &&
-            (x1+20) + (width1-40) > x2 &&
-            y1 < y2 + height2 &&
-            y1 + (height1-15) > y2
-        );
+        if (x1 +15 < x2 + width2 && x1 - 10 + (width1-20) > x2 &&  y1 < y2 + height2 && y1 + (height1-20) > y2)
+            return true;
+        else{
+            return false;
+        }
     }
 
 
